@@ -15,12 +15,9 @@ import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.shift.hack.beacon.model.User;
 import com.shift.hack.beacon.network.ApiClient;
 import com.shift.hack.beacon.network.ServiceGenerator;
-import com.shift.hack.beacon.util.LoginSerializer;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,20 +44,13 @@ public class MainActivity extends AppCompatActivity {
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         assert loginButton != null;
         loginButton.setReadPermissions("email");
-        loginButton.setReadPermissions("user_birthday");
-        loginButton.setReadPermissions("manage_pages");
-        loginButton.setReadPermissions("public_profile");
 
         // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 // App code
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.registerTypeAdapter(LoginResult.class, new LoginSerializer());
-
-                Gson gson = gsonBuilder.create();
-
+                Log.d("ACCESS_TOKEN", loginResult.getAccessToken().getToken());
                 ServiceGenerator.createService(ApiClient.class).auth(loginResult.getAccessToken().getToken()).enqueue(new Callback<User>() {
                     @Override
                     public void onResponse(Call<User> call, Response<User> response) {

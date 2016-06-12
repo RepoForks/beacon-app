@@ -8,6 +8,8 @@ import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -206,5 +208,29 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
         } catch (RemoteException e) {    }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.user, menu);
 
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent;
+
+        switch (item.getItemId()) {
+            case R.id.my_transactions:
+                intent = new Intent(this, TransactionsActivity.class);
+                startActivity(intent);
+                return true;
+
+            case R.id.my_beacons:
+                intent = new Intent(this, BeaconsActivity.class);
+                startActivity(intent);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 }

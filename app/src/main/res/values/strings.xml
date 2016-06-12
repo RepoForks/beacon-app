@@ -4,4 +4,7 @@
     <string name="title_activity_search_beacon">SearchBeaconActivity</string>
     <string name="title_activity_checkout">CheckoutActivity</string>
     <string name="title_activity_confirmed">ConfirmedActivity</string>
+    <string name="title_activity_transactions">TransactionsActivity</string>
+    <string name="title_activity_beacons">BeaconsActivity</string>
+    <string name="title_activity_beacon">BeaconActivity</string>
 </resources>
