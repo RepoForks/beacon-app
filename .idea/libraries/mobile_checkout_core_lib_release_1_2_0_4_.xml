@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="mobile-checkout-core-lib-release-1.2.0.4-">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/mobile-checkout-core-lib-release-1.2.0.4/jars/classes.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/mobile-checkout-core-lib-release-1.2.0.4/jars/libs/acra-4.6.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/mobile-checkout-core-lib-release-1.2.0.4/jars/libs/adobeMobileLibrary-4.5.3.jar!/" />
+      <root url="file://$PROJECT_DIR$/app/build/intermediates/exploded-aar/mobile-checkout-core-lib-release-1.2.0.4/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
