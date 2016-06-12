@@ -9,12 +9,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.shift.hack.beacon.adapter.BeaconsAdapter;
 import com.shift.hack.beacon.model.User;
 import com.shift.hack.beacon.network.ApiClient;
 import com.shift.hack.beacon.network.ServiceGenerator;
@@ -27,8 +29,9 @@ import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.ResponseBody;
@@ -42,12 +45,10 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
 
     private TextView textSearching;
     private View beaconLayout;
-    private Beacon beacon = null;
     private User user = null;
-    private TextView beaconName;
-    private TextView userName;
-    private String beaconJson;
-    private boolean called = false;
+    private ListView beaconList;
+    private BeaconsAdapter adapter;
+    private List<String> loaded = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,20 +72,20 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
         beaconLayout = findViewById(R.id.beacon_layout);
 
         CircleImageView imageView = (CircleImageView) findViewById(R.id.profile_image);
-
-        beaconName = (TextView) findViewById(R.id.beacon_name);
-        userName = (TextView) findViewById(R.id.user_name);
+        beaconList = (ListView) findViewById(R.id.listBeacons);
+        adapter = new BeaconsAdapter();
+        beaconList.setAdapter(adapter);
 
         Glide.with(this).load("https://graph.facebook.com/" + user.getFbid() +
                 "/picture?width=200&height=200&access_token=" + user.getToken()).into(imageView);
 
         ((RippleBackground)findViewById(R.id.ripple)).startRippleAnimation();
 
-        beaconLayout.setOnClickListener(new View.OnClickListener() {
+        beaconList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), CheckoutActivity.class);
-                intent.putExtra("beaconJson", beaconJson);
+                intent.putExtra("beaconJson", adapter.getItem(position).toString());
                 startActivity(intent);
             }
         });
@@ -115,9 +116,9 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
         });*/
     }
 
-    private void loadBeacon() {
+    private void loadBeacon(String uuid) {
         Log.d("LOADBEACON", "LOADBEACON");
-        ServiceGenerator.createService(ApiClient.class).getDevice(beacon.getId1().toString()).enqueue(new Callback<ResponseBody>() {
+        ServiceGenerator.createService(ApiClient.class).getDevice(uuid).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
                 Log.d("onResponse", "LOADBEACON");
@@ -131,21 +132,18 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
                             .getAsJsonArray()
                             .get(0)
                             .getAsJsonObject();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "Erro... BIURR", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            textSearching.setText("1 beacon found");
+                            textSearching.setText(loaded.size() + " beacon(s) found");
                             beaconLayout.setVisibility(View.VISIBLE);
 
-                            beaconName.setText(jsonObject.get("name").getAsString());
-                            userName.setText(jsonObject.get("owner").getAsJsonObject().get("name").getAsString());
-                            beaconJson = jsonObject.toString();
+                            adapter.addToDataList(jsonObject);
                         }
                     });
                 } else {
@@ -174,11 +172,12 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
                 if (beacons.size() > 0) {
                     Log.i(TAG, "The first beacon I see is about " + beacons.iterator().next().getDistance() + " meters away.");
 
-                    beacon = (Beacon) beacons.toArray()[0];
-
-                    if (!called) {
-                        called = true;
-                        loadBeacon();
+                    for (Beacon beacon : beacons) {
+                        if (!loaded.contains(beacon.getId1().toString())) {
+                            Log.d("BEACON", "BEACON ID " + beacon.getId1().toString());
+                            loaded.add(beacon.getId1().toString());
+                            loadBeacon(beacon.getId1().toString());
+                        }
                     }
                 }
             }
