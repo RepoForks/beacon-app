@@ -1,5 +1,7 @@
 package com.shift.hack.beacon;
 
+import android.os.Bundle;
+
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
