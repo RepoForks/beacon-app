@@ -1,5 +1,6 @@
 package com.shift.hack.beacon;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -30,6 +31,7 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
 
     private TextView textSearching;
     private View beaconLayout;
+    private Beacon beacon = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +52,16 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
         Glide.with(this).load("http://graph.facebook.com/12/picture?width=200&height=200").into(beaconView);
 
         ((RippleBackground)findViewById(R.id.ripple)).startRippleAnimation();
+
+        beaconLayout.setVisibility(View.VISIBLE);
+        beaconLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), CheckoutActivity.class);
+                //intent.putExtra("uuid", beacon.getId1().toUuid().toString());
+                startActivity(intent);
+            }
+        });
 
         /*Beacon beacon = new Beacon.Builder()
                 .setId1("2f234454-cf6d-4a0f-adf2-f4911ba9ffa6")
@@ -90,6 +102,8 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
                 if (beacons.size() > 0) {
                     Log.i(TAG, "The first beacon I see is about "+beacons.iterator().next().getDistance()+" meters away.");
+
+                    beacon = (Beacon) beacons.toArray()[0];
                 }
             }
         });

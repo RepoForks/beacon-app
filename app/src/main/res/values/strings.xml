@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Beacon</string>
     <string name="title_activity_search_beacon">SearchBeaconActivity</string>
+    <string name="title_activity_checkout">CheckoutActivity</string>
 </resources>
