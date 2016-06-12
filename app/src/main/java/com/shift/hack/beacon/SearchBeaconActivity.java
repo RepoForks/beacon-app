@@ -51,6 +51,7 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
     private ListView beaconList;
     private BeaconsAdapter adapter;
     private List<String> loaded = new ArrayList<>();
+    private int counter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +143,7 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            textSearching.setText(loaded.size() + " beacon(s) found");
+                            textSearching.setText((++counter) + " beacon(s) found");
                             beaconLayout.setVisibility(View.VISIBLE);
 
                             adapter.addToDataList(jsonObject);
