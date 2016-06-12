@@ -1,13 +1,13 @@
 package com.shift.hack.beacon;
 
-import android.os.Bundle;
-
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -17,7 +17,14 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.shift.hack.beacon.model.User;
+import com.shift.hack.beacon.network.ApiClient;
+import com.shift.hack.beacon.network.ServiceGenerator;
 import com.shift.hack.beacon.util.LoginSerializer;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     CallbackManager callbackManager;
@@ -29,9 +36,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         callbackManager = CallbackManager.Factory.create();
 
+        User user = User.getUser(this);
+
+        if (user != null) {
+            Intent intent = new Intent(getApplicationContext(), SearchBeaconActivity.class);
+            startActivity(intent);
+            finish();
+        }
+
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         assert loginButton != null;
         loginButton.setReadPermissions("email");
+        loginButton.setReadPermissions("user_birthday");
+        loginButton.setReadPermissions("manage_pages");
+        loginButton.setReadPermissions("public_profile");
 
         // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
@@ -42,9 +60,26 @@ public class MainActivity extends AppCompatActivity {
                 gsonBuilder.registerTypeAdapter(LoginResult.class, new LoginSerializer());
 
                 Gson gson = gsonBuilder.create();
-                String json = gson.toJson(loginResult);
 
-                // TODO: enviar para a API o json acima com as info da api do login do facebook
+                ServiceGenerator.createService(ApiClient.class).auth(loginResult.getAccessToken().getToken()).enqueue(new Callback<User>() {
+                    @Override
+                    public void onResponse(Call<User> call, Response<User> response) {
+                        if (response.body() != null) {
+                            User.setUser(response.body(), getApplicationContext());
+                            Intent intent = new Intent(getApplicationContext(), SearchBeaconActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Log.d("ERROR", response.message());
+                            Toast.makeText(getApplicationContext(), "ERRO!", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<User> call, Throwable t) {
+                        Log.d("ONFAILURE", "MESSAGE: " + t.getMessage());
+                    }
+                });
             }
 
             @Override
