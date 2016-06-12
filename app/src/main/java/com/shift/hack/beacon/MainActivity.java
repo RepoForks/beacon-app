@@ -1,9 +1,11 @@
 package com.shift.hack.beacon;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.TextView;
+import android.view.Window;
+import android.view.WindowManager;
 
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -11,6 +13,9 @@ import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.shift.hack.beacon.util.LoginSerializer;
 
 public class MainActivity extends AppCompatActivity {
     CallbackManager callbackManager;
@@ -31,7 +36,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 // App code
-                ((TextView)findViewById(R.id.name)).setText(loginResult.getAccessToken().getUserId());
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                gsonBuilder.registerTypeAdapter(LoginResult.class, new LoginSerializer());
+
+                Gson gson = gsonBuilder.create();
+                String json = gson.toJson(loginResult);
+
+                // TODO: enviar para a API o json acima com as info da api do login do facebook
             }
 
             @Override
@@ -44,6 +55,11 @@ public class MainActivity extends AppCompatActivity {
                 // App code
             }
         });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Window w = getWindow();
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        }
     }
 
     @Override
