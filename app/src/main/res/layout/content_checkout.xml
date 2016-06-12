@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,58 +10,99 @@
     tools:showIn="@layout/activity_checkout"
     android:background="@color/colorPrimary"
     android:orientation="vertical">
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/profile_image"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="24dp"
-        app:civ_border_width="0dp"
-        app:civ_border_color="#FF000000"/>
-
-    <TextView android:id="@+id/title"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#ffffff"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-        android:layout_gravity="center"
-        android:layout_marginTop="12dp"
-        android:text="Mesa 24" />
+        android:orientation="vertical">
 
-    <TextView android:id="@+id/price"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#ffffff"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:layout_gravity="center"
-        android:layout_marginTop="12dp"
-        android:text="R$ 120,00" />
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profile_image"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp"
+            app:civ_border_width="0dp"
+            app:civ_border_color="#FF000000"/>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="wrap_content">
+                <TextView android:id="@+id/title"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.5"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
+                    android:textColor="#ffffff"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                    android:layout_marginTop="12dp"
+                    android:text="Mesa 24" />
+
+                <TextView android:id="@+id/price"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.5"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_horizontal"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                    android:layout_marginTop="12dp"
+                    android:text="R$ 120,00" />
+        </LinearLayout>
 
 
-    <com.rengwuxian.materialedittext.MaterialEditText
-        android:id="@+id/editPrice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginRight="24dp"
-        android:layout_marginLeft="24dp"
-        android:textSize="34sp"
-        android:hint="I'll pay..."
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:inputType="number"
-        app:met_baseColor="@android:color/white"
-        app:met_floatingLabel="highlight"
-        app:met_maxCharacters="3"
-        app:met_primaryColor="@android:color/white"
-        app:met_singleLineEllipsis="true" />
+        <com.rengwuxian.materialedittext.MaterialEditText
+            android:id="@+id/editPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginLeft="24dp"
+            android:textSize="34sp"
+            android:hint="I'll pay:"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:inputType="number"
+            app:met_baseColor="@android:color/white"
+            app:met_floatingLabel="highlight"
+            app:met_maxCharacters="3"
+            app:met_primaryColor="@android:color/white"
+            app:met_singleLineEllipsis="true" />
 
-    <Button android:id="@+id/buttonPay"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="24dp"
-        android:text="PAGAR COM MASTERPASS" />
+        <com.devmarvel.creditcardentry.library.CreditCardForm
+            android:id="@+id/credit_card_form"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:helper_text_color="#000"
+            app:include_helper="false"
+            app:include_zip="false"/>
 
-</LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal">
+            <Button android:id="@+id/scan"
+                android:onClick="onScanPress"
+                android:layout_weight="0.5"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_horizontal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="24dp"
+                android:text="Scan card" />
+
+            <Button android:id="@+id/buttonPay"
+                android:layout_weight="0.5"
+                android:layout_width="0dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_horizontal"
+                android:layout_height="wrap_content"
+                android:layout_margin="24dp"
+                android:text="Finish" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
