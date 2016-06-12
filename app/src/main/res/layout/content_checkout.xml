@@ -24,23 +24,32 @@
             app:civ_border_width="0dp"
             app:civ_border_color="#FF000000"/>
 
-        <TextView android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#ffffff"
-            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-            android:layout_gravity="center"
-            android:layout_marginTop="12dp"
-            android:text="Mesa 24" />
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="wrap_content">
+                <TextView android:id="@+id/title"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.5"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
+                    android:textColor="#ffffff"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                    android:layout_marginTop="12dp"
+                    android:text="Mesa 24" />
 
-        <TextView android:id="@+id/price"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#ffffff"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-            android:layout_gravity="center"
-            android:layout_marginTop="12dp"
-            android:text="R$ 120,00" />
+                <TextView android:id="@+id/price"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.5"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_horizontal"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                    android:layout_marginTop="12dp"
+                    android:text="R$ 120,00" />
+        </LinearLayout>
 
 
         <com.rengwuxian.materialedittext.MaterialEditText
@@ -64,25 +73,31 @@
         <com.simplify.android.sdk.CardEditor
             android:id="@+id/card_editor"
             app:iconColor="#fff"
+            android:layout_margin="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:orientation="horizontal">
             <Button android:id="@+id/scan"
                 android:onClick="onScanPress"
-                android:layout_width="wrap_content"
+                android:layout_weight="0.5"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_horizontal"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="left"
                 android:layout_margin="24dp"
                 android:text="Scan card" />
 
             <Button android:id="@+id/buttonPay"
-                android:layout_width="wrap_content"
+                android:layout_weight="0.5"
+                android:layout_width="0dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_horizontal"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
                 android:layout_margin="24dp"
                 android:text="Finish" />
         </LinearLayout>
