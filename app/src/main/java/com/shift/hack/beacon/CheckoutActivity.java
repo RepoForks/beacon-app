@@ -5,8 +5,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,6 +20,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.shift.hack.beacon.model.User;
+import com.simplify.android.sdk.Card;
+import com.simplify.android.sdk.CardEditor;
+import com.simplify.android.sdk.CardToken;
+import com.simplify.android.sdk.Simplify;
+
+import io.card.payment.CardIOActivity;
+import io.card.payment.CreditCard;
 
 public class CheckoutActivity extends AppCompatActivity {
     /**
@@ -32,6 +41,7 @@ public class CheckoutActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Simplify.init("sbpb_MDYzNjdmYjYtOGFmMC00MWQ4LTg4MTEtYzM2YjBmM2VjYTlk");
         setContentView(R.layout.activity_checkout);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -82,6 +92,57 @@ public class CheckoutActivity extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+        // create a new card object
+        Card card = new Card()
+                .setNumber("5555555555554444")
+                .setExpMonth("01")
+                .setExpYear("99")
+                .setCvc("123")
+                .setAddressZip("12345");
+        // tokenize the card
+        Simplify.createCardToken(card, new CardToken.Callback() {
+            @Override
+            public void onSuccess(CardToken cardToken) {
+                // ...
+            }
+            @Override
+            public void onError(Throwable throwable) {
+                // ...
+            }
+        });
+
+// init card editor
+        final CardEditor cardEditor = (CardEditor) findViewById(R.id.card_editor);
+        final Button checkoutButton = (Button) findViewById(R.id.buttonPay);
+// add state change listener
+        assert cardEditor != null;
+        cardEditor.addOnStateChangedListener(new CardEditor.OnStateChangedListener() {
+            @Override
+            public void onStateChange(CardEditor cardEditor) {
+                // true: card editor contains valid and complete card information
+                assert checkoutButton != null;
+                checkoutButton.setEnabled(cardEditor.isValid());
+            }
+        });
+        // add checkout button click listener
+        assert checkoutButton != null;
+        checkoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // create a card token
+                Simplify.createCardToken(cardEditor.getCard(), new CardToken.Callback() {
+                    @Override
+                    public void onSuccess(CardToken cardToken) {
+                        // ...
+                    }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        // ...
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -132,5 +193,56 @@ public class CheckoutActivity extends AppCompatActivity {
         );
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
+    }
+
+    public void onScanPress(View v) {
+        Intent scanIntent = new Intent(this, CardIOActivity.class);
+
+        // customize these values to suit your needs.
+        scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_EXPIRY, true); // default: false
+        scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_CVV, false); // default: false
+        scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_POSTAL_CODE, false); // default: false
+
+        // MY_SCAN_REQUEST_CODE is arbitrary and is only used within this activity.
+        startActivityForResult(scanIntent, 123);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 123) {
+            String resultDisplayStr;
+            if (data != null && data.hasExtra(CardIOActivity.EXTRA_SCAN_RESULT)) {
+                CreditCard scanResult = data.getParcelableExtra(CardIOActivity.EXTRA_SCAN_RESULT);
+
+                // Never log a raw card number. Avoid displaying it, but if necessary use getFormattedCardNumber()
+                resultDisplayStr = "Card Number: " + scanResult.getRedactedCardNumber() + "\n";
+
+                // Do something with the raw number, e.g.:
+                // myService.setCardNumber( scanResult.cardNumber );
+
+                if (scanResult.isExpiryValid()) {
+                    resultDisplayStr += "Expiration Date: " + scanResult.expiryMonth + "/" + scanResult.expiryYear + "\n";
+                }
+
+                if (scanResult.cvv != null) {
+                    // Never log or display a CVV
+                    resultDisplayStr += "CVV has " + scanResult.cvv.length() + " digits.\n";
+                }
+
+                if (scanResult.postalCode != null) {
+                    resultDisplayStr += "Postal Code: " + scanResult.postalCode + "\n";
+                }
+                Log.v("CARD", resultDisplayStr);
+            }
+            else {
+                resultDisplayStr = "Scan was canceled.";
+                Log.v("CARD", resultDisplayStr);
+            }
+            // do something with resultDisplayStr, maybe display it in a textView
+            // resultTextView.setText(resultDisplayStr);
+        }
+        // else handle other activity results
     }
 }

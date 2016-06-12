@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.shift.hack.beacon.model.User;
@@ -122,30 +123,38 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
             public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
                 Log.d("onResponse", "LOADBEACON");
                 if (response.body() != null) {
-                    final JsonObject jsonObject;
+                    JsonObject obj = null;
 
                     try {
                         String json = response.body().string();
-                        jsonObject = new JsonParser()
+                        JsonArray array = new JsonParser()
                             .parse(json)
-                            .getAsJsonArray()
-                            .get(0)
-                            .getAsJsonObject();
+                            .getAsJsonArray();
+                        if (array.size() > 0) {
+                            obj = array.get(0)
+                                    .getAsJsonObject();
+                        } else {
+                            Log.v(TAG, "Array size: 0");
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                         Toast.makeText(getApplicationContext(), "Erro... BIURR", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
+                    final JsonObject jsonObject = obj;
+
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            textSearching.setText("1 beacon found");
-                            beaconLayout.setVisibility(View.VISIBLE);
+                            if (jsonObject != null) {
+                                textSearching.setText("1 beacon found");
+                                beaconLayout.setVisibility(View.VISIBLE);
 
-                            beaconName.setText(jsonObject.get("name").getAsString());
-                            userName.setText(jsonObject.get("owner").getAsJsonObject().get("name").getAsString());
-                            beaconJson = jsonObject.toString();
+                                beaconName.setText(jsonObject.get("name").getAsString());
+                                userName.setText(jsonObject.get("owner").getAsJsonObject().get("name").getAsString());
+                                beaconJson = jsonObject.toString();
+                            }
                         }
                     });
                 } else {
