@@ -1,7 +1,5 @@
 package com.shift.hack.beacon;
 
-import android.os.Bundle;
-
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +43,10 @@ public class MainActivity extends AppCompatActivity {
                 String json = gson.toJson(loginResult);
 
                 // TODO: enviar para a API o json acima com as info da api do login do facebook
+
+                Intent intent = new Intent(getApplicationContext(), SearchBeaconActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getApplicationContext().startActivity(intent);
             }
 
             @Override
