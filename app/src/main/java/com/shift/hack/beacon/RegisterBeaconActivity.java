@@ -16,7 +16,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.shift.hack.beacon.model.User;
@@ -70,8 +69,8 @@ public class RegisterBeaconActivity extends AppCompatActivity implements BeaconC
 
         CircleImageView imageView = (CircleImageView) findViewById(R.id.profile_image);
 
-        Glide.with(this).load("https://graph.facebook.com/" + user.getFbid() +
-                "/picture?width=200&height=200&access_token=" + user.getToken()).into(imageView);
+        //Glide.with(this).load("https://graph.facebook.com/" + user.getFbid() +
+        //        "/picture?width=200&height=200&access_token=" + user.getToken()).into(imageView);
 
         ((RippleBackground)findViewById(R.id.ripple)).startRippleAnimation();
 

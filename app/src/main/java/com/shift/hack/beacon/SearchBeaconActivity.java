@@ -15,7 +15,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.shift.hack.beacon.adapter.BeaconsAdapter;
@@ -79,8 +78,8 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
         adapter = new BeaconsAdapter();
         beaconList.setAdapter(adapter);
 
-        Glide.with(this).load("https://graph.facebook.com/" + user.getFbid() +
-                "/picture?width=200&height=200&access_token=" + user.getToken()).into(imageView);
+        //Glide.with(this).load("https://graph.facebook.com/" + user.getFbid() +
+        //        "/picture?width=200&height=200&access_token=" + user.getToken()).into(imageView);
 
         ((RippleBackground)findViewById(R.id.ripple)).startRippleAnimation();
 
@@ -178,12 +177,26 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
                     Log.i(TAG, "The first beacon I see is about " + beacons.iterator().next().getDistance() + " meters away.");
 
                     for (Beacon beacon : beacons) {
-                        if (!loaded.contains(beacon.getId1().toString())) {
+                        if (!loaded.contains(beacon.getId1().toString()) && beacon.getDistance() < 3) {
                             Log.d("BEACON", "BEACON ID " + beacon.getId1().toString());
                             loaded.add(beacon.getId1().toString());
                             loadBeacon(beacon.getId1().toString());
+                        } else if (beacon.getDistance() >= 3) {
+                            final Beacon rem = beacon;
+
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    loaded.remove(rem.getId1().toString());
+                                    adapter.removeFromDataList(rem.getId1().toString());
+                                    counter--;
+
+                                    textSearching.setText(counter + " beacon(s) found");
+                                }
+                            });
                         }
                     }
+
                 }
             }
         });

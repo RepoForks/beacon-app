@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Beacon</string>
+    <string name="app_name">BGo</string>
     <string name="facebook_app_id">286188441720917</string>
     <string name="title_activity_search_beacon">SearchBeaconActivity</string>
     <string name="title_activity_checkout">CheckoutActivity</string>

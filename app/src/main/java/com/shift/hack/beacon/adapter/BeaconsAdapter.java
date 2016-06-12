@@ -23,6 +23,11 @@ public class BeaconsAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
+    public void removeFromDataList(String uuid) {
+        dataList.remove(getItemPos(uuid));
+        notifyDataSetChanged();
+    }
+
     public BeaconsAdapter() {
         dataList = new ArrayList<>();
     }
@@ -35,6 +40,20 @@ public class BeaconsAdapter extends BaseAdapter {
     @Override
     public JsonObject getItem(int position) {
         return dataList.get(position);
+    }
+
+    public int getItemPos(String uuid) {
+        int i=0;
+
+        for (JsonObject object : dataList) {
+            if (object.get("uuid").getAsString().equals(uuid)) {
+                return i;
+            }
+
+            i++;
+        }
+
+        return -1;
     }
 
     @Override
