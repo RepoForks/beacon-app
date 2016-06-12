@@ -45,16 +45,18 @@
         android:layout_marginTop="24dp"
         android:layout_marginRight="24dp"
         android:layout_marginLeft="24dp"
-        android:hint="R$ 120,00"
         android:textSize="34sp"
+        android:hint="I'll pay..."
         android:layout_gravity="center"
+        android:gravity="center"
+        android:inputType="number"
         app:met_baseColor="@android:color/white"
         app:met_floatingLabel="highlight"
-        app:met_maxCharacters="20"
+        app:met_maxCharacters="3"
         app:met_primaryColor="@android:color/white"
         app:met_singleLineEllipsis="true" />
 
-    <Button
+    <Button android:id="@+id/buttonPay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

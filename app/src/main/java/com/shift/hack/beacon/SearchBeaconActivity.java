@@ -44,9 +44,9 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
     private View beaconLayout;
     private Beacon beacon = null;
     private User user = null;
-    private CircleImageView beaconView;
     private TextView beaconName;
     private TextView userName;
+    private String beaconJson;
     private boolean called = false;
 
     @Override
@@ -72,11 +72,11 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
 
         CircleImageView imageView = (CircleImageView) findViewById(R.id.profile_image);
 
-        beaconView = (CircleImageView) findViewById(R.id.beacon_image);
         beaconName = (TextView) findViewById(R.id.beacon_name);
         userName = (TextView) findViewById(R.id.user_name);
 
-        Glide.with(this).load("http://graph.facebook.com/" + user.getFbid() + "/picture?width=200&height=200").into(imageView);
+        Glide.with(this).load("https://graph.facebook.com/" + user.getFbid() +
+                "/picture?width=200&height=200&access_token=" + user.getToken()).into(imageView);
 
         ((RippleBackground)findViewById(R.id.ripple)).startRippleAnimation();
 
@@ -84,7 +84,7 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), CheckoutActivity.class);
-                intent.putExtra("uuid", beacon.getId1().toString());
+                intent.putExtra("beaconJson", beaconJson);
                 startActivity(intent);
             }
         });
@@ -142,15 +142,10 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
                         public void run() {
                             textSearching.setText("1 beacon found");
                             beaconLayout.setVisibility(View.VISIBLE);
-                            String uid = jsonObject.get("owner").getAsJsonObject().get("accounts")
-                                .getAsJsonObject().get("facebook").getAsJsonObject().get("_id").getAsString();
-
-                            Glide.with(getApplicationContext())
-                                    .load("http://graph.facebook.com/" + uid + "/picture?width=200&height=200")
-                                    .into(beaconView);
 
                             beaconName.setText(jsonObject.get("name").getAsString());
                             userName.setText(jsonObject.get("owner").getAsJsonObject().get("name").getAsString());
+                            beaconJson = jsonObject.toString();
                         }
                     });
                 } else {
