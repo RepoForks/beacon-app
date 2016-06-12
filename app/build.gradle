@@ -39,4 +39,5 @@ dependencies {
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
     compile 'com.simplify:simplify-android:2.1.0'
     compile 'io.card:android-sdk:5.3.4'
+    compile 'com.github.dbachelder:CreditCardEntry:1.4.7'
 }

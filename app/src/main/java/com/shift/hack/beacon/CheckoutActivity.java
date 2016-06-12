@@ -12,8 +12,10 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.devmarvel.creditcardentry.library.CreditCardForm;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -22,7 +24,6 @@ import com.google.gson.JsonParser;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.shift.hack.beacon.model.User;
 import com.simplify.android.sdk.Card;
-import com.simplify.android.sdk.CardEditor;
 import com.simplify.android.sdk.CardToken;
 import com.simplify.android.sdk.Simplify;
 
@@ -38,6 +39,8 @@ public class CheckoutActivity extends AppCompatActivity {
 
 
     private User user;
+    private Card mCard;
+    private CreditCardForm mCardForm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,66 +83,43 @@ public class CheckoutActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(jsonObject.get("owner").getAsJsonObject().get("name").getAsString());
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        findViewById(R.id.buttonPay).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), ConfirmedActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
         // create a new card object
-        Card card = new Card()
-                .setNumber("5555555555554444")
-                .setExpMonth("01")
-                .setExpYear("99")
-                .setCvc("123")
-                .setAddressZip("12345");
-        // tokenize the card
-        Simplify.createCardToken(card, new CardToken.Callback() {
-            @Override
-            public void onSuccess(CardToken cardToken) {
-                // ...
-            }
-            @Override
-            public void onError(Throwable throwable) {
-                // ...
-            }
-        });
+        mCard = new Card().setAddressZip("12345");
 
-// init card editor
-        final CardEditor cardEditor = (CardEditor) findViewById(R.id.card_editor);
+        // init card editor
+        mCardForm = (CreditCardForm) findViewById(R.id.credit_card_form);
         final Button checkoutButton = (Button) findViewById(R.id.buttonPay);
-// add state change listener
-        assert cardEditor != null;
-        cardEditor.addOnStateChangedListener(new CardEditor.OnStateChangedListener() {
-            @Override
-            public void onStateChange(CardEditor cardEditor) {
-                // true: card editor contains valid and complete card information
-                assert checkoutButton != null;
-                checkoutButton.setEnabled(cardEditor.isValid());
-            }
-        });
+        // add state change listener
         // add checkout button click listener
         assert checkoutButton != null;
         checkoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mCard.setNumber(mCardForm.getCreditCard().getCardNumber().replaceAll("\\s+",""));
+                Log.v("CARD_NUMBER",  mCardForm.getCreditCard().getCardNumber());
+                mCard.setExpMonth(mCardForm.getCreditCard().getExpDate().split("/")[0]);
+                mCard.setExpYear(mCardForm.getCreditCard().getExpDate().split("/")[1]);
+                mCard.setCvc(mCardForm.getCreditCard().getSecurityCode());
+                mCard.setAddressZip(mCardForm.getCreditCard().getZipCode());
+
+
                 // create a card token
-                Simplify.createCardToken(cardEditor.getCard(), new CardToken.Callback() {
+                Simplify.createCardToken(mCard, new CardToken.Callback() {
                     @Override
                     public void onSuccess(CardToken cardToken) {
-                        // ...
+                        Intent intent = new Intent(getApplicationContext(), ConfirmedActivity.class);
+                        startActivity(intent);
+                        finish();
                     }
                     @Override
                     public void onError(Throwable throwable) {
-                        // ...
+                        Toast.makeText(getApplicationContext(), "Invalid card", Toast.LENGTH_LONG).show();
+                        Log.v("ERROR", "Error: ", throwable);
                     }
                 });
             }
@@ -203,7 +183,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
         // customize these values to suit your needs.
         scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_EXPIRY, true); // default: false
-        scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_CVV, false); // default: false
+        scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_CVV, true); // default: false
         scanIntent.putExtra(CardIOActivity.EXTRA_REQUIRE_POSTAL_CODE, false); // default: false
 
         // MY_SCAN_REQUEST_CODE is arbitrary and is only used within this activity.
@@ -220,24 +200,31 @@ public class CheckoutActivity extends AppCompatActivity {
                 CreditCard scanResult = data.getParcelableExtra(CardIOActivity.EXTRA_SCAN_RESULT);
 
                 // Never log a raw card number. Avoid displaying it, but if necessary use getFormattedCardNumber()
-                resultDisplayStr = "Card Number: " + scanResult.getRedactedCardNumber() + "\n";
+                mCard.setNumber(scanResult.cardNumber);
+                mCardForm.setCardNumber(scanResult.cardNumber, false);
 
                 // Do something with the raw number, e.g.:
                 // myService.setCardNumber( scanResult.cardNumber );
 
                 if (scanResult.isExpiryValid()) {
-                    resultDisplayStr += "Expiration Date: " + scanResult.expiryMonth + "/" + scanResult.expiryYear + "\n";
+                    mCard.setExpMonth(String.valueOf(scanResult.expiryMonth));
+                    mCard.setExpYear(String.valueOf(scanResult.expiryYear));
+                    mCardForm.setExpDate(scanResult.expiryMonth+"/"+scanResult.expiryYear, false);
                 }
 
                 if (scanResult.cvv != null) {
                     // Never log or display a CVV
-                    resultDisplayStr += "CVV has " + scanResult.cvv.length() + " digits.\n";
+                    mCard.setCvc(scanResult.cvv);
+                    mCardForm.setSecurityCode(scanResult.cvv, false);
                 }
 
                 if (scanResult.postalCode != null) {
-                    resultDisplayStr += "Postal Code: " + scanResult.postalCode + "\n";
+                    mCard.setAddressZip(scanResult.postalCode);
+                    mCardForm.setZipCode(scanResult.postalCode, false);
                 }
-                Log.v("CARD", resultDisplayStr);
+                if (mCardForm.isCreditCardValid()) {
+                    Log.v("CARD", "Valid!");
+                }
             }
             else {
                 resultDisplayStr = "Scan was canceled.";
