@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -43,7 +44,7 @@ public class BeaconsActivity extends AppCompatActivity {
         if (user == null) {
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(intent);
-            finish();
+            onBackPressed();
             return;
         }
 
@@ -76,7 +77,7 @@ public class BeaconsActivity extends AppCompatActivity {
                         ja = new JsonParser().parse(response.body().string()).getAsJsonArray();
                     } catch (IOException e) {
                         e.printStackTrace();
-                        finish();
+                        onBackPressed();
                         return;
                     }
 
@@ -104,10 +105,33 @@ public class BeaconsActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(this, SearchBeaconActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.beacons, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
+        Intent intent;
+
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+
+            case R.id.create_beacon:
+                intent = new Intent(this, RegisterBeaconActivity.class);
+                startActivity(intent);
+                finish();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);

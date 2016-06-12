@@ -1,24 +1,24 @@
 package com.shift.hack.beacon;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
-import com.shift.hack.beacon.adapter.BeaconsAdapter;
 import com.shift.hack.beacon.model.User;
 import com.shift.hack.beacon.network.ApiClient;
 import com.shift.hack.beacon.network.ServiceGenerator;
@@ -31,9 +31,8 @@ import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.ResponseBody;
@@ -41,21 +40,18 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class SearchBeaconActivity extends AppCompatActivity implements BeaconConsumer {
+public class RegisterBeaconActivity extends AppCompatActivity implements BeaconConsumer {
     protected static final String TAG = "MonitoringActivity";
     private BeaconManager beaconManager;
 
     private TextView textSearching;
-    private View beaconLayout;
     private User user = null;
-    private ListView beaconList;
-    private BeaconsAdapter adapter;
-    private List<String> loaded = new ArrayList<>();
+    private boolean lock = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_beacon);
+        setContentView(R.layout.activity_register_beacon);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -71,91 +67,110 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
         beaconManager.bind(this);
 
         textSearching = (TextView) findViewById(R.id.text_searching);
-        beaconLayout = findViewById(R.id.beacon_layout);
 
         CircleImageView imageView = (CircleImageView) findViewById(R.id.profile_image);
-        beaconList = (ListView) findViewById(R.id.listBeacons);
-        adapter = new BeaconsAdapter();
-        beaconList.setAdapter(adapter);
 
         Glide.with(this).load("https://graph.facebook.com/" + user.getFbid() +
                 "/picture?width=200&height=200&access_token=" + user.getToken()).into(imageView);
 
         ((RippleBackground)findViewById(R.id.ripple)).startRippleAnimation();
 
-        beaconList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getApplicationContext(), CheckoutActivity.class);
-                intent.putExtra("beaconJson", adapter.getItem(position).toString());
-                startActivity(intent);
-            }
-        });
-
-        /*Beacon beacon = new Beacon.Builder()
-                .setId1("2f234454-cf6d-4a0f-adf2-f4911ba9ffa6")
-                .setId2("1")
-                .setId3("2")
-                .setManufacturer(0x0118) // Radius Networks.  Change this for other beacon layouts
-                .setTxPower(-59)
-                .setDataFields(Arrays.asList(new Long[]{0l})) // Remove this for beacon layouts without d: fields
-                .build();
-        // Change the layout below for other beacon types
-        BeaconParser beaconParser = new BeaconParser()
-                .setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25");
-        BeaconTransmitter beaconTransmitter = new BeaconTransmitter(getApplicationContext(), beaconParser);
-        beaconTransmitter.startAdvertising(beacon, new AdvertiseCallback() {
-
-            @Override
-            public void onStartFailure(int errorCode) {
-                Log.e(TAG, "Advertisement start failed with code: " + errorCode);
-            }
-
-            @Override
-            public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-                Log.i(TAG, "Advertisement start succeeded.");
-            }
-        });*/
+        getSupportActionBar().setTitle("Register Beacon");
     }
 
-    private void loadBeacon(String uuid) {
+    private void loadBeacon(final String uuid) {
         Log.d("LOADBEACON", "LOADBEACON");
         ServiceGenerator.createService(ApiClient.class).getDevice(uuid).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
                 Log.d("onResponse", "LOADBEACON");
                 if (response.body() != null) {
-                    final JsonObject jsonObject;
+
+                    JsonArray ja;
 
                     try {
-                        String json = response.body().string();
-                        jsonObject = new JsonParser()
-                            .parse(json)
-                            .getAsJsonArray()
-                            .get(0)
-                            .getAsJsonObject();
-                    } catch (Exception e) {
+                        ja = new JsonParser().parse(response.body().string()).getAsJsonArray();
+                    } catch (IOException e) {
                         e.printStackTrace();
+                        onBackPressed();
                         return;
                     }
 
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            textSearching.setText(loaded.size() + " beacon(s) found");
-                            beaconLayout.setVisibility(View.VISIBLE);
+                    if (ja.size() == 0) {
+                        storeBeacon(uuid);
+                        return;
+                    }
 
-                            adapter.addToDataList(jsonObject);
-                        }
-                    });
+                    Toast.makeText(getApplicationContext(), "Beacon already registered!", Toast.LENGTH_SHORT).show();
+                    onBackPressed();
                 } else {
                     Log.d("ERROR", response.message());
+                    storeBeacon(uuid);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.d("onFailure", t.getMessage());
+                storeBeacon(uuid);
+            }
+        });
+    }
+
+    private void storeBeacon(final String uuid) {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_create_beacon, null, false);
+
+        final EditText name = (EditText) view.findViewById(R.id.name);
+        final EditText value = (EditText) view.findViewById(R.id.value);
+
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+            .setTitle("Beacon Found")
+            .setView(view)
+            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    saveBeacon(uuid, name.getText().toString(), value.getText().toString());
+                }
+            })
+            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    onBackPressed();
+                }
+            })
+            .create();
+
+        alertDialog.show();
+    }
+
+    private void saveBeacon(String uuid, String name, String value) {
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Creating, please wait...");
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+
+        ServiceGenerator.createService(ApiClient.class)
+        .createBeacon(user.get_id(), uuid, name, value).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
+                Log.d("onResponse", "LOADBEACON");
+                progressDialog.dismiss();
+                if (response.body() != null) {
+                    Toast.makeText(getApplicationContext(), "Beacon registered!", Toast.LENGTH_SHORT).show();
+                    onBackPressed();
+                } else {
+                    Log.d("ERROR", response.message());
+                    Toast.makeText(getApplicationContext(), "Failed to register beacon!", Toast.LENGTH_SHORT).show();
+                    onBackPressed();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.d("onFailure", t.getMessage());
+                progressDialog.dismiss();
+                Toast.makeText(getApplicationContext(), "Failed to register beacon!", Toast.LENGTH_SHORT).show();
+                onBackPressed();
             }
         });
     }
@@ -175,9 +190,9 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
                     Log.i(TAG, "The first beacon I see is about " + beacons.iterator().next().getDistance() + " meters away.");
 
                     for (Beacon beacon : beacons) {
-                        if (!loaded.contains(beacon.getId1().toString())) {
-                            Log.d("BEACON", "BEACON ID " + beacon.getId1().toString());
-                            loaded.add(beacon.getId1().toString());
+                        if (beacon.getDistance() < 0.05 && !lock) {
+                            lock = true;
+                            Log.d("LOADBEACON", beacon.getId1().toString());
                             loadBeacon(beacon.getId1().toString());
                         }
                     }
@@ -209,27 +224,17 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.user, menu);
-
-        return super.onCreateOptionsMenu(menu);
+    public void onBackPressed() {
+        Intent intent = new Intent(getApplicationContext(), BeaconsActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Intent intent;
-
-        switch (item.getItemId()) {
-            case R.id.my_transactions:
-                intent = new Intent(this, TransactionsActivity.class);
-                startActivity(intent);
-                return true;
-
-            case R.id.my_beacons:
-                intent = new Intent(this, BeaconsActivity.class);
-                startActivity(intent);
-                finish();
-                return true;
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);

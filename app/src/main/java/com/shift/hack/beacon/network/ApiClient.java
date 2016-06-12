@@ -27,4 +27,11 @@ public interface ApiClient {
 
     @GET("users/{id}/devices")
     Call<ResponseBody> getBeacons(@Path("id") String id);
+
+    @FormUrlEncoded
+    @POST("devices")
+    Call<ResponseBody> createBeacon(@Field("owner") String owner,
+                                    @Field("uuid") String uuid,
+                                    @Field("name") String name,
+                                    @Field("value") String value);
 }

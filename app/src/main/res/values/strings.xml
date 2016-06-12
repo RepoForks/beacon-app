@@ -7,4 +7,5 @@
     <string name="title_activity_transactions">TransactionsActivity</string>
     <string name="title_activity_beacons">BeaconsActivity</string>
     <string name="title_activity_beacon">BeaconActivity</string>
+    <string name="title_activity_register_beacon">RegisterBeaconActivity</string>
 </resources>

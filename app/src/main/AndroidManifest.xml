@@ -11,9 +11,15 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <!-- Camera features - recommended -->
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
-    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.flash"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -59,11 +65,16 @@
         <activity
             android:name=".BeaconActivity"
             android:label="@string/title_activity_beacon"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <activity
+            android:name=".RegisterBeaconActivity"
+            android:label="@string/title_activity_register_beacon"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
