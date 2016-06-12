@@ -84,6 +84,8 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
 
         ((RippleBackground)findViewById(R.id.ripple)).startRippleAnimation();
 
+        getSupportActionBar().setTitle("BGo");
+
         beaconList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
