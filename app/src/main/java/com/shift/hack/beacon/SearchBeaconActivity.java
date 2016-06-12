@@ -182,6 +182,7 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
                             loaded.add(beacon.getId1().toString());
                             loadBeacon(beacon.getId1().toString());
                         } else if (beacon.getDistance() >= 3) {
+                            /*
                             final Beacon rem = beacon;
 
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -193,7 +194,7 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
 
                                     textSearching.setText(counter + " beacon(s) found");
                                 }
-                            });
+                            });*/
                         }
                     }
 

@@ -55,7 +55,7 @@ public class TransactionsAdapter extends BaseAdapter {
         try {
             beaconName.setText(jsonObject.get("device").getAsJsonObject().get("name").getAsString());
             userName.setText(jsonObject.get("owner").getAsJsonObject().get("name").getAsString());
-            price.setText(String.format("R$ %.2f", jsonObject.get("value").getAsFloat()));
+            price.setText(String.format("R$ %.2f", jsonObject.get("value").getAsFloat()/100));
         } catch(Exception e) {
             e.printStackTrace();
         }

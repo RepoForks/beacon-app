@@ -125,11 +125,13 @@ public class CheckoutActivity extends AppCompatActivity {
 
         float total = jsonObject.get("value").getAsFloat();
         float received = jsonObject.get("amountReceived").getAsFloat();
+        float value = total - received;
+        if (value < 0) value = 0;
 
         titleText.setText(jsonObject.get("name").getAsString());
-        priceText.setText(String.format("R$ %.2f", total - received));
-        editPrice.setHint(String.format("R$ %.2f", total - received));
-        editPrice.setText("" + ((int) (total - received))*100);
+        priceText.setText(String.format("R$ %.2f", value));
+        editPrice.setHint(String.format("R$ %.2f", value));
+        editPrice.setText("" + ((int) value));
 
         getSupportActionBar().setTitle(jsonObject.get("owner").getAsJsonObject().get("name").getAsString());
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -144,7 +146,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
         // init card editor
         mCardForm = (CreditCardForm) findViewById(R.id.credit_card_form);
-        mCard.setNumber("5204740009900014");
+        mCardForm.setCardNumber("5204740009900014", false);
         final Button checkoutButton = (Button) findViewById(R.id.buttonPay);
         // add state change listener
         // add checkout button click listener

@@ -35,6 +35,7 @@ public interface ApiClient {
                                     @Field("name") String name,
                                     @Field("value") String value);
 
+    @FormUrlEncoded
     @POST("transactions")
     Call<ResponseBody> sendTransaction(@Field("value") Integer value,
                                        @Field("token") String token,
