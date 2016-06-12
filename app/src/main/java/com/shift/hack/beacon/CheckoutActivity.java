@@ -5,6 +5,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,12 +25,20 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.shift.hack.beacon.model.User;
+import com.shift.hack.beacon.network.ApiClient;
+import com.shift.hack.beacon.network.ServiceGenerator;
 import com.simplify.android.sdk.Card;
 import com.simplify.android.sdk.CardToken;
 import com.simplify.android.sdk.Simplify;
 
+import java.text.NumberFormat;
+
 import io.card.payment.CardIOActivity;
 import io.card.payment.CreditCard;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class CheckoutActivity extends AppCompatActivity {
     /**
@@ -36,11 +46,14 @@ public class CheckoutActivity extends AppCompatActivity {
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
+    private Integer mValue;
 
 
     private User user;
+    private String deviceId;
     private Card mCard;
     private CreditCardForm mCardForm;
+    private String current;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +64,8 @@ public class CheckoutActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         user = User.getUser(this);
+        if(getIntent().hasExtra("DEVICE"))
+            deviceId = getIntent().getStringExtra("DEVICE");
 
         if (user == null) {
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
@@ -59,7 +74,7 @@ public class CheckoutActivity extends AppCompatActivity {
         }
 
         String json = getIntent().getExtras().getString("beaconJson");
-        JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
+        final JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
 
         String fbid = jsonObject.get("owner").getAsJsonObject().get("accounts").getAsJsonObject()
                         .get("facebook").getAsJsonObject().get("_id").getAsString();
@@ -67,7 +82,43 @@ public class CheckoutActivity extends AppCompatActivity {
         ImageView profileImage = (ImageView) findViewById(R.id.profile_image);
         TextView titleText = (TextView) findViewById(R.id.title);
         TextView priceText = (TextView) findViewById(R.id.price);
-        MaterialEditText editPrice = (MaterialEditText) findViewById(R.id.editPrice);
+
+
+        final MaterialEditText editPrice = (MaterialEditText) findViewById(R.id.editPrice);
+
+        assert editPrice != null;
+        editPrice.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!s.toString().equals(current)){
+                    editPrice.removeTextChangedListener(this);
+
+                    String replaceable = String.format("[%s,.]", NumberFormat.getCurrencyInstance()
+                            .getCurrency().getSymbol());
+                    String cleanString = s.toString().replaceAll(replaceable, "");
+
+                    double parsed = Double.parseDouble(cleanString);
+                    mValue = (int) parsed;
+                    String formatted = NumberFormat.getCurrencyInstance().format((parsed/100));
+
+                    current = formatted;
+                    editPrice.setText(formatted);
+                    editPrice.setSelection(formatted.length());
+
+                    editPrice.addTextChangedListener(this);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
 
         Glide.with(this).load("https://graph.facebook.com/" + fbid +
                 "/picture?width=200&height=200&access_token=" + user.getToken()).into(profileImage);
@@ -78,7 +129,7 @@ public class CheckoutActivity extends AppCompatActivity {
         titleText.setText(jsonObject.get("name").getAsString());
         priceText.setText(String.format("R$ %.2f", total - received));
         editPrice.setHint(String.format("R$ %.2f", total - received));
-        editPrice.setText("" + ((int) (total - received)));
+        editPrice.setText("" + ((int) (total - received))*100);
 
         getSupportActionBar().setTitle(jsonObject.get("owner").getAsJsonObject().get("name").getAsString());
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -93,6 +144,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
         // init card editor
         mCardForm = (CreditCardForm) findViewById(R.id.credit_card_form);
+        mCard.setNumber("5204740009900014");
         final Button checkoutButton = (Button) findViewById(R.id.buttonPay);
         // add state change listener
         // add checkout button click listener
@@ -112,9 +164,36 @@ public class CheckoutActivity extends AppCompatActivity {
                 Simplify.createCardToken(mCard, new CardToken.Callback() {
                     @Override
                     public void onSuccess(CardToken cardToken) {
-                        Intent intent = new Intent(getApplicationContext(), ConfirmedActivity.class);
-                        startActivity(intent);
-                        finish();
+                        Log.v("TAG", "Device id: " + deviceId);
+                        ServiceGenerator.createService(ApiClient.class)
+                                .sendTransaction(mValue, cardToken.getId(), user._id, deviceId).enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                String tId = null;
+                                if (response.isSuccessful()) {
+                                    try {
+                                        String json = response.body().string();
+                                        JsonObject jsonObject = new JsonParser()
+                                                .parse(json)
+                                                .getAsJsonObject();
+                                        jsonObject = jsonObject.get("payment").getAsJsonObject();
+                                        tId = jsonObject.get("id").getAsString();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        return;
+                                    }
+                                    Intent intent = new Intent(getApplicationContext(), ConfirmedActivity.class);
+                                    intent.putExtra("ID", tId);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                            }
+                        });
                     }
                     @Override
                     public void onError(Throwable throwable) {

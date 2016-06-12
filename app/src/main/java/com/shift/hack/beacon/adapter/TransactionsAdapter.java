@@ -52,9 +52,13 @@ public class TransactionsAdapter extends BaseAdapter {
         TextView userName = (TextView) view.findViewById(R.id.user_name);
         TextView price = (TextView) view.findViewById(R.id.price);
 
-        beaconName.setText(jsonObject.get("device").getAsJsonObject().get("name").getAsString());
-        userName.setText(jsonObject.get("owner").getAsJsonObject().get("name").getAsString());
-        price.setText(String.format("R$ %.2f", jsonObject.get("value").getAsFloat()));
+        try {
+            beaconName.setText(jsonObject.get("device").getAsJsonObject().get("name").getAsString());
+            userName.setText(jsonObject.get("owner").getAsJsonObject().get("name").getAsString());
+            price.setText(String.format("R$ %.2f", jsonObject.get("value").getAsFloat()));
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
         return view;
     }

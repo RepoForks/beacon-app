@@ -34,4 +34,10 @@ public interface ApiClient {
                                     @Field("uuid") String uuid,
                                     @Field("name") String name,
                                     @Field("value") String value);
+
+    @POST("transactions")
+    Call<ResponseBody> sendTransaction(@Field("value") Integer value,
+                                       @Field("token") String token,
+                                       @Field("owner") String owner,
+                                       @Field("device") String device);
 }

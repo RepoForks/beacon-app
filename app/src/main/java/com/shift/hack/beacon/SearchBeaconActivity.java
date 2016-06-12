@@ -43,7 +43,6 @@ import retrofit2.Response;
 public class SearchBeaconActivity extends AppCompatActivity implements BeaconConsumer {
     protected static final String TAG = "MonitoringActivity";
     private BeaconManager beaconManager;
-
     private TextView textSearching;
     private View beaconLayout;
     private User user = null;
@@ -90,6 +89,7 @@ public class SearchBeaconActivity extends AppCompatActivity implements BeaconCon
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), CheckoutActivity.class);
                 intent.putExtra("beaconJson", adapter.getItem(position).toString());
+                intent.putExtra("DEVICE", adapter.getItem(position).get("_id").getAsString());
                 startActivity(intent);
             }
         });

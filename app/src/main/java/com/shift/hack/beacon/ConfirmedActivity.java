@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class ConfirmedActivity extends AppCompatActivity {
 
@@ -17,6 +18,9 @@ public class ConfirmedActivity extends AppCompatActivity {
 
         getSupportActionBar().setTitle("Confirmation");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (getIntent().hasExtra("ID"))
+            ((TextView)findViewById(R.id.transaction_id)).setText("Payment ID:" + getIntent().getStringExtra("ID"));
     }
 
     @Override
